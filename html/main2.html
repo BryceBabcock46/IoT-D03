@@ -1,0 +1,130 @@
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Accelerometer Data</title>
+</head>
+<body>
+    <h1>Donde granny</h1>
+    <div id= "dataDisplay"></div>
+    <button id = "getDataButton">Get Averages of Last 10 Entries</button>
+    <select id="devIdSelector">
+        <option value="all">All Devices</option>
+        <option value="1">Device 1</option>
+        <option value="2">Device 2</option>
+        <option value="3">Device 3</option>
+        <option value="4">Device 4</option>
+        <option value="5">Device 5</option>
+        <option value="6">Device 5</option>
+        <option value="7">Device 5</option>
+        <option value="8">Device 5</option>
+        <option value="9">Device 5</option>
+        <option value="10">Device 5</option>
+    </select>
+
+    <script>
+        // Function to fetch and display data
+        function fetchData(device_id = "all") {
+            fetch(`/data?dev_id=${device_id}`)
+            .then(response => response.json())
+            .then(data => {
+                let display = document.getElementById('dataDisplay');
+                display.innerHTML = '';
+                data.forEach(entry => {
+                    display.innerHTML += `<p>Entry ID: ${entry.entry_id}, Device ID: ${entry.device_id}, X: ${entry.x_val}, Y: ${entry.y_val}, Z: ${entry.z_val}</p>`;
+                });
+            })
+            .catch(error => console.error('Error fetching data:', error));
+        }
+
+        function fetchAverageData(device_id = "all") {
+            fetch(`/average_data?dev_id=${device_id}`)
+            .then(response => response.json())
+            .then(averageData => {
+                let display = document.getElementById('dataDisplay');
+                display.innerHTML = '';
+                display.innerHTML += `<h2>Last 10 Entries Average Values</h2>`;
+                display.innerHTML += `<p>X: ${averageData.x_val}, Y: ${averageData.y_val}, Z: ${averageData.z_val}</p>`;
+            })
+            .catch(error => console.error('Error fetching average data:', error));
+        }
+
+        // Event listener for the button to get last 10 entries average values
+        document.getElementById('getDataButton').addEventListener('click', function() {
+            let device_id = document.getElementById('devIdSelector').value;
+            fetchAverageData(device_id);
+        });
+
+        // Fetch and display data on page load
+        fetchData();
+        
+    </script>
+
+
+
+
+
+
+
+
+
+
+
+
+</body>
+</html>
+
+
+
+
+
+
+
+<!-- <body>
+    <input id="query" type="text" value="SELECT * FROM accelTable" >
+
+    <table>
+        <tr>
+            <td>ID</td>
+            <td>AX</td>
+            <td>AY</td>
+            <td>AZ</td>
+        </tr>
+        <tbody id="tbody"></tbody>
+    </table>
+
+    <script>
+        let table = document.getElementById("tbody")
+        let input = document.getElementById("query")
+
+
+        let lastQuery = input.value 
+
+        //setInterval(refreshData,500)
+        function refreshData(){
+
+            fetch("/data",{
+                method: 'GET',
+                headers: {
+                    'Content-Type': 'application/json', // Example of another header
+                    'query': input.value 
+                }
+            }).then(res => res.json()).then(data =>{
+                //add data to table
+                console.log(data)
+            })
+
+        }
+        refreshData()
+        // document.body.addEventListener("keydown",(event)=>{
+        //     if(event.key == "enter"){
+        //         refreshData()
+        //     }
+        // })
+
+
+
+
+    </script>
+    
+</body> -->

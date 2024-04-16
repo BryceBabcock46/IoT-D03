@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Accelerometer Data Prediction</title>
+</head>
+<body>
+    <h1>Accelerometer Data Prediction</h1>
+    <div id="predictionResult"></div>
+    <button id="predictButton">Predict Activity</button>
+    <div id="predictionData"></div>
+
+    <script>
+        // Function to fetch data and predict activity
+        function predictActivity() {
+            fetch('/predict', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({})
+            })
+            .then(response => response.json())
+            .then(data => {
+                // Display predicted activity
+                document.getElementById('predictionResult').innerText = 'Predicted Activity: ' + data.predicted_activity;
+                // Fetch and display last 10 or 20 rows of data
+                fetch('/data')
+                .then(response => response.json())
+                .then(data => {
+                    let predictionData = document.getElementById('predictionData');
+                    predictionData.innerHTML = '';
+                    predictionData.innerHTML += '<h2>Last 10 or 20 Rows of Data Used for Prediction</h2>';
+                    data.forEach(entry => {
+                        predictionData.innerHTML += `<p>Entry ID: ${entry.entry_id}, Device ID: ${entry.device_id}, X: ${entry.x_val}, Y: ${entry.y_val}, Z: ${entry.z_val}</p>`;
+                    });
+                })
+                .catch(error => console.error('Error fetching data:', error));
+            })
+            .catch(error => console.error('Error predicting activity:', error));
+        }
+
+        // Event listener for the predict button
+        document.getElementById('predictButton').addEventListener('click', predictActivity);
+    </script>
+</body>
+</html>

@@ -1,0 +1,20 @@
+make 2 functions : 
+    insert into database
+        takes in a query to insert the desired data into the database and returns success/fail message accordingly
+        see samples/A19.../create and insert mariadb.py 
+    get from database 
+        takes in a query to get from the database and returns the desired data 
+        returns the data that was queried 
+        see samples/A19/schema and select.py
+            try : select * FROM accelltable WHERE X_val >=3 AND/OR /X_val < 20 ;
+
+
+server_flask.py: 
+    in /insert or the send_data function :
+        call insert into database to insert the query into the database 
+    in GET /data or get_data function  
+        call get from database with the query and send to the user 
+main.html:
+    add the data to the table 
+
+   
