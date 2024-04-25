@@ -5,7 +5,7 @@ import sim_data
 import random
 import json
 from tabulate import tabulate
-from predict import predict_activity
+from predict import initt_prediction, plot_graph
 
 app = Flask(__name__)
 
@@ -80,15 +80,27 @@ def fetch_raw_data(device_id='all', limit=500):
         conn = get_db_connection()
         cursor = conn.cursor(dictionary=True)
         if device_id == 'all':
-            cursor.execute("SELECT * FROM downstairsTBL ORDER BY entry_id DESC LIMIT ?", (limit,))
+            cursor.execute("SELECT * FROM accelTable ORDER BY entry_id DESC LIMIT ?", (limit,))
         else:
-            cursor.execute("SELECT * FROM downstairsTBL WHERE device_id = ? ORDER BY entry_id DESC LIMIT ?", (device_id, limit))
+            cursor.execute("SELECT * FROM accelTable WHERE device_id = ? ORDER BY entry_id DESC LIMIT ?", (device_id, limit))
         data = cursor.fetchall()
         return data
     except mariadb.Error as e:
         print(f"Error fetching data: {e}")
         return []
     
+def insert_data(data):
+    try:
+        conn = get_db_connection()
+        cursor = conn.cursor(dictionary=True)
+        # Insert data into the database
+        cursor.execute("INSERT INTO accelTable (x_val, y_val, z_val) VALUES (?, ?, ?)",
+                    (data['x'], data['y'], data['z']))
+        conn.commit()
+    except mariadb.Error as e:
+        print(f"Error fetching data: {e}")
+        return []
+
 def calculate_last_10_entries_average(data):
     last_10_entries = data[-10:]
     if not last_10_entries:
@@ -101,69 +113,41 @@ def calculate_last_10_entries_average(data):
     avg_z = sum(z_vals) / len(z_vals)
     return {'x_val': avg_x, 'y_val': avg_y, 'z_val': avg_z}
 
+def calculate_data_summary(data):
+    first_10_rows = data[:10]
+    last_10_rows = data[-10:]
+    return {'first_10_rows': first_10_rows, 'last_10_rows': last_10_rows}
+
+
 @app.route('/')
 def index():
     return render_template('main.html')
 
-    
+@app.route('/receive_data', methods=['POST']) 
+def receive_data():
+    data = request.json
+    insert_data(data)
+    return jsonify({'success': True})
+
 @app.route('/predict', methods=['POST'])
 def predict():
-    data = fetch_raw_data()
-    print("Data here")
-    print(data)
-    predicted_activity = predict_activity(data)
-    return jsonify({'predicted_activity': predicted_activity})
-    
-@app.route('/data')
-def get_data():
-    device_id = request.args.get('device_id', 'all')
-    data = fetch_raw_data(device_id)
-    return jsonify(data)
+    print("prediction requested...")
+    predicted_activities = initt_prediction()
+    return jsonify({'predicted_activity': predicted_activities})
 
-@app.route('/average_data')
-def get_average_data():
-        device_id = request.args.get('device_id', 'all')
-        data = fetch_raw_data(device_id)
-        last_10_avg = calculate_last_10_entries_average(data)
-        return jsonify(last_10_avg)
-
+@app.route('/plot', methods=['GET'])
+def plot():
+    print("plot requested...")
+    return jsonify(plot_graph())
 
 if __name__ == '__main__':
     conn = get_db_connection()
     if conn:
         create_table(conn)
-        for _ in range(10):
-            add_sim_data(conn)
         conn.close()
     app.run(host= '0.0.0.0', port=5025)
 
 
-
-
-
-
-
-# #run get from database with the given query and send the data back to the user by returning it 
-# @app.route('/data')
-# def get_data():
-#     headers = dict(request.headers)
-#     query = headers["query"]
-
-#     pass 
-
-# # run insert to database and senbd the objects in the data variable to the database
-# @app.route('/insert')
-# def send_data():
-#     headers = dict(request.headers)
-#     data = headers["data"]
-#     pass 
-# #   # Create a dictionary representing the JSON response
-# #     data = {
-# #         'message': 'This is a JSON response from Flask server',
-# #         'status': 'success'
-# #     }
-# #     # Return the dictionary as JSON using jsonify
-# #     return jsonify(data)
 
 
 

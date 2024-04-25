@@ -4,16 +4,54 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Accelerometer Data Prediction</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        body {
+            background-color: #e6f5ff; 
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+
+        }
+
+        h1 {
+            margin-bottom: 20px; 
+        }
+
+        #predictionResult {
+            margin-bottom: 20px; 
+        }
+
+        #activityImage {
+            margin-bottom: 20px;
+        }
+
+
+        #accelerationGraph {
+            margin-top: 20px;
+            width: 800px;
+            height: 900px; 
+        }
+
+        button {
+            margin-bottom: 20px;
+        }
+    </style>
+
 </head>
 <body>
     <h1>Accelerometer Data Prediction</h1>
-    <div id="predictionResult"></div>
+    <div id="predictionResult"><span id="activity"></span></div>
     <button id="predictButton">Predict Activity</button>
     <div id="predictionData"></div>
+    <img id="activityImage" alt="Activity" width="200" height="200">
+    <img id="accelerationGraph" src="" alt="Graphs" width="800" height="900">
+
 
     <script>
-        // Function to fetch data and predict activity
         function predictActivity() {
+
             fetch('/predict', {
                 method: 'POST',
                 headers: {
@@ -23,26 +61,28 @@
             })
             .then(response => response.json())
             .then(data => {
-                // Display predicted activity
                 document.getElementById('predictionResult').innerText = 'Predicted Activity: ' + data.predicted_activity;
-                // Fetch and display last 10 or 20 rows of data
-                fetch('/data')
-                .then(response => response.json())
-                .then(data => {
-                    let predictionData = document.getElementById('predictionData');
-                    predictionData.innerHTML = '';
-                    predictionData.innerHTML += '<h2>Last 10 or 20 Rows of Data Used for Prediction</h2>';
-                    data.forEach(entry => {
-                        predictionData.innerHTML += `<p>Entry ID: ${entry.entry_id}, Device ID: ${entry.device_id}, X: ${entry.x_val}, Y: ${entry.y_val}, Z: ${entry.z_val}</p>`;
-                    });
-                })
-                .catch(error => console.error('Error fetching data:', error));
+                document.getElementById('activityImage').src = '/static/' + data.predicted_activity + '.png';
             })
             .catch(error => console.error('Error predicting activity:', error));
+            fetch('/plot')
+            .then(response => response.json())
+            .then(data => {
+                document.getElementById('accelerationGraph').src = data.plots[0];
+            })
+            .catch(error => console.error('Error fetching graph data:', error));
+
         }
 
-        // Event listener for the predict button
         document.getElementById('predictButton').addEventListener('click', predictActivity);
     </script>
 </body>
 </html>
+
+
+
+
+
+
+
+

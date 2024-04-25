@@ -175,12 +175,23 @@ def insert_data_from_csv(csv_file, table_name, conn):
 
 
 conn = get_db_connection()
-if conn:
+#if conn:
     # print_table(cursor= conn.cursor(), table='upstairsTBL')
     # print_table(cursor= conn.cursor(), table='joggingTBL')
     # print_table(cursor= conn.cursor(), table='sittingTBL')
     # print_table(cursor= conn.cursor(), table='standingTBL')
     # print_table(cursor= conn.cursor(), table='walkingTBL')
     #insert_data_from_csv('downstairs.csv', 'downstairsTBL', conn)
-    print_table(cursor= conn.cursor(), table='downstairsTBL')
+    #insert_data_from_csv('jogging.csv', 'joggingTBL', conn)
+    #insert_data_from_csv('sitting.csv', 'sittingTBL', conn)
+    #insert_data_from_csv('standing.csv', 'standingTBL', conn)
+    #insert_data_from_csv('upstairs.csv', 'upstairsTBL', conn)
+    #insert_data_from_csv('walking.csv', 'walkingTBL', conn)
+
+    #print_table(cursor= conn.cursor(), table='downstairsTBL')
+    #print_table(cursor= conn.cursor(), table='joggingTBL')
+    #print_table(cursor= conn.cursor(), table='sittingTBL')
+    #print_table(cursor= conn.cursor(), table='standingTBL')
+    #print_table(cursor= conn.cursor(), table='upstairsTBL')
+    #print_table(cursor= conn.cursor(), table='walkingTBL')
 
