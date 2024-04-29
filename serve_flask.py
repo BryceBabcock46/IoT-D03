@@ -6,8 +6,24 @@ import random
 import json
 from tabulate import tabulate
 from predict import initt_prediction, plot_graph
+from flask_cors import CORS
+import socket
+import threading
+
 
 app = Flask(__name__)
+CORS(app)
+# Create a socket object
+server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+
+# Bind the socket to the address and port
+server_socket.bind(('0.0.0.0', 5026))
+
+# Listen for incoming connections
+server_socket.listen(5)
+
+print("Socket server started")
+
 
 app.config['TEMPLATES_AUTO_RELOAD'] = True
 app.template_folder = 'html'
@@ -95,7 +111,7 @@ def insert_data(data):
         cursor = conn.cursor(dictionary=True)
         # Insert data into the database
         cursor.execute("INSERT INTO accelTable (x_val, y_val, z_val) VALUES (?, ?, ?)",
-                    (data['x'], data['y'], data['z']))
+                    (data['x_val'], data['y_val'], data['z_val']))
         conn.commit()
     except mariadb.Error as e:
         print(f"Error fetching data: {e}")
@@ -118,6 +134,37 @@ def calculate_data_summary(data):
     last_10_rows = data[-10:]
     return {'first_10_rows': first_10_rows, 'last_10_rows': last_10_rows}
 
+def handle_socket_data(conn):
+    try:
+        while True:
+            # Receive data from the client
+            data = conn.recv(1024)
+            if not data:
+                break
+
+            # Decode the received data from bytes to string
+            data_str = data.decode()
+
+            # Convert the JSON string to a Python dictionary
+            data_dict = json.loads(data_str)
+
+            # Process the received data (insert into database, etc.)
+            print("Received data:", data_dict)
+            # Your data processing code here
+
+    except Exception as e:
+        print("Error handling socket data:", e)
+
+def accept_connections():
+    while True:
+        # Accept incoming connection
+        conn, addr = server_socket.accept()
+        print("Connection from:", addr)
+
+        # Create a new thread to handle the connection
+        threading.Thread(target=handle_socket_data, args=(conn,)).start()
+
+
 
 @app.route('/')
 def index():
@@ -125,9 +172,14 @@ def index():
 
 @app.route('/receive_data', methods=['POST']) 
 def receive_data():
-    data = request.json
-    insert_data(data)
-    return jsonify({'success': True})
+    if request.method == 'POST':
+        print('recognizes post request')
+        data = request.json
+        insert_data(data)
+        return jsonify({'success': True})
+    else:
+        print('nice try kiddo')
+        abort(405)
 
 @app.route('/predict', methods=['POST'])
 def predict():
